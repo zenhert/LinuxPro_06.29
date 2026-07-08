@@ -75,3 +75,36 @@ mdadm: No md superblock detected on /dev/sde.
 mdadm: No md superblock detected on /dev/sdf.
 ```
 Проверка показала отсутствие суперблоков, диски чисты.
+Можно приступать к созданию RAID-массива.
+
+### 2. Сборка RAID-10
+Создание RAID-массива
+```
+zenhert@linpro:~$ sudo mdadm --create --verbose /dev/md0 -l 10 -n 4 /dev/sd{c,d,e,f}
+mdadm: layout defaults to n2
+mdadm: layout defaults to n2
+mdadm: chunk size defaults to 512K
+mdadm: size set to 10476544K
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md0 started.
+```
+Проверка сборки
+```
+zenhert@linpro:~$ cat /proc/mdstat
+Personalities : [raid0] [raid1] [raid6] [raid5] [raid4] [raid10]
+md0 : active raid10 sdf[3] sde[2] sdd[1] sdc[0]
+      20953088 blocks super 1.2 512K chunks 2 near-copies [4/4] [UUUU]
+```
+```
+zenhert@linpro:~$ sudo mdadm -D /dev/md0
+/dev/md0:
+        Raid Level : raid10
+    Number   Major   Minor   RaidDevice State
+       0       8       32        0      active sync set-A   /dev/sdc
+       1       8       48        1      active sync set-B   /dev/sdd
+       2       8       64        2      active sync set-A   /dev/sde
+       3       8       80        3      active sync set-B   /dev/sdf
+```
+RAID собрался успешно.
+
+### 3. Вывод из строя RAID-массива
